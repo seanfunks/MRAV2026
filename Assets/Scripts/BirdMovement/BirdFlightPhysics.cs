@@ -22,6 +22,16 @@ public class BirdFlightPhysics : MonoBehaviour
     [Header("Steering")]
     public float steeringForce = 4.0f;
 
+    [Header("Auto Flap/Glide Cycle")]
+    [Tooltip("Min seconds of flapping before a glide")]
+    public float flapDurationMin = 3.0f;
+    [Tooltip("Max seconds of flapping before a glide")]
+    public float flapDurationMax = 7.0f;
+    [Tooltip("Min seconds of gliding before resuming flaps")]
+    public float glideDurationMin = 5.0f;
+    [Tooltip("Max seconds of gliding before resuming flaps")]
+    public float glideDurationMax = 10.0f;
+
     [Header("Orientation")]
     public float bankAngleMax = 45.0f;
     public float pitchInfluence = 0.3f;
@@ -53,16 +63,33 @@ public class BirdFlightPhysics : MonoBehaviour
     private float flapTimer;
     private float flapRandomOffset;
 
+    // Auto flap/glide cycle
+    private float cycleTimer;
+    private float currentCycleDuration;
+
     void Start()
     {
         flapRandomOffset = Random.Range(0f, 10f);
         velocity = transform.forward * (minSpeed + maxHorizontalSpeed) * 0.5f;
         isFlapping = true;
+        currentCycleDuration = Random.Range(flapDurationMin, flapDurationMax);
+        cycleTimer = Random.Range(0f, currentCycleDuration); // stagger so birds don't all glide at once
     }
 
     void FixedUpdate()
     {
         float dt = Time.fixedDeltaTime;
+
+        // 0. Auto flap/glide cycle
+        cycleTimer += dt;
+        if (cycleTimer >= currentCycleDuration)
+        {
+            cycleTimer = 0f;
+            isFlapping = !isFlapping;
+            currentCycleDuration = isFlapping
+                ? Random.Range(flapDurationMin, flapDurationMax)
+                : Random.Range(glideDurationMin, glideDurationMax);
+        }
 
         // 1. Gravity
         velocity.y -= gravity * dt;
@@ -72,13 +99,11 @@ public class BirdFlightPhysics : MonoBehaviour
         float flapAngle = (flapTimer + flapRandomOffset) * flapFrequency * 2f * Mathf.PI;
         flapPhase = (Mathf.Sin(flapAngle) + 1f) * 0.5f; // 0..1 for animation
 
-        if (isFlapping)
-        {
-            // Base lift: fully counters gravity + slight surplus to climb
-            velocity.y += (gravity + 1.0f) * dt;
-            // Periodic flap bobbing: oscillates ±liftForce for natural motion
-            velocity.y += Mathf.Sin(flapAngle) * liftForce * dt;
-        }
+        // Lift always active (simulates wind/thermals during glide)
+        // Base lift: fully counters gravity + slight surplus to climb
+        velocity.y += (gravity + 1.0f) * dt;
+        // Periodic bobbing: oscillates ±liftForce for natural motion
+        velocity.y += Mathf.Sin(flapAngle) * liftForce * dt;
 
         // 3. Forward thrust
         velocity += transform.forward * thrustForce * dt;
