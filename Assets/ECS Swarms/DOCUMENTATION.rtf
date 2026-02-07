@@ -1,0 +1,132 @@
+{\rtf1\ansi\ansicpg1252\deff0\nouicompat{\fonttbl{\f0\fnil\fcharset0 Bahnschrift SemiCondensed;}{\f1\fnil\fcharset0 Calibri;}{\f2\fnil\fcharset0 Cascadia Code;}{\f3\fnil\fcharset0 Cascadia Mono;}{\f4\fnil\fcharset2 Symbol;}}
+{\colortbl ;\red0\green0\blue255;\red0\green0\blue0;}
+{\*\generator Riched20 10.0.19041}\viewkind4\uc1 
+\pard\sa200\sl276\slmult1\qc\ul\b\f0\fs44\lang9\par
+\par
+
+\pard\sl276\slmult1\qc\fs96 ECS Swarms Offline\ulnone\b0  \ul\b Documentation v1.1\fs44\par
+
+\pard\sa200\sl276\slmult1\qr\ulnone\b0\fs28\par
+Created By: Tigpan (aka Timothy Letkeman)\par
+\par
+\par
+
+\pard\sa200\sl276\slmult1\qc\ul\b\fs40 For the full web-based documentation and script reference:\ulnone\b0  {{\field{\*\fldinst{HYPERLINK https://tigpan.com/documentation/ecs-swarms/ }}{\fldrslt{https://tigpan.com/documentation/ecs-swarms/\ul0\cf0}}}}\f0\fs40\par
+
+\pard\sa200\sl276\slmult1\qr\ul\b\fs44\par
+
+\pard\sa200\sl276\slmult1\f1\fs40 Table of contents: \b0\fs24\line\ulnone\tab 1. Description\line\tab 2. Links\line\tab\tab 2.1. Guides\line\tab\tab 2.2. Trailers\line\tab\tab 2.3. Benchmarks\line\tab 3. Getting Started\line\tab\tab 3.1. Requirements\line\tab\tab 3.2. Using ECS Swarms\line\tab 4. Built in Behaviours\line\tab\tab 4.1. Overview\line\tab\tab 4.2. Vision\line\tab\tab 4.3. Boid Behaviours\line\tab\tab\tab 4.3.1. Seperation\line\tab\tab\tab 4.3.2. Alignment\line\tab\tab\tab 4.3.3. Cohesion\line\tab\tab 4.4. New Behaviours\line\tab\tab\tab 4.4.1. Avoidance\line\tab\tab\tab 4.4.2. Hover\line\tab\tab\tab 4.4.3. Target\line\tab\tab\tab 4.4.4. Obstacle\line\tab\tab\tab 4.4.5. Gravity\line\tab\tab\tab 4.4.6. Drag\line\tab 5. How to Create Custom Behaviours\line\tab\tab 5.1. What is ECS?\line\tab\tab 5.2. Regular Behaviours\line\tab\tab 5.3. Physics Based Behaviours\line\tab\tab 5.4. Custom Settings\line\tab 6. Script Reference (ONLY ON WEB DOCUMENTATION)\line\tab 7. Contact Information\par
+\par
+\par
+\par
+\ul\b\fs40 1. Description:\ulnone\b0\fs24\par
+\tab ECS Swarms is a framework for creating high performance swarm/flocking behaviours built on ECS. Capable of creating fantastic simulations of birds, fish, and so much more!\par
+\tab The ECS Swarm Toolkit is \b the asset for you \b0 if you are looking to simply add efficient, swarming/flocking behaviours to your scene. This can be used to create many great effects such as birds, fish, and more! ECS Swarm Toolkit \b is designed to be as simple as possible\b0  as to \b abstract away any complicated ECS code\b0 , it also comes with \b extensive web-based documentation \b0 for you to easily add your own behaviours. It also comes with many built-in behaviours so that you can create your own simulations just by adding a few components, \b no coding required\b0 !\par
+\tab It uses ECS and the Physics package, so in order to use you must install the Hybrid Renderer and the Physics packages from the package manager (requires Unity 2022 for Entities 1.0, or Unity 2020 for Entities 0.50). It also supports using the \b Burst compiler \b0 for \b incredible performance!\b0\par
+\b Features:\b0\par
+
+\pard{\pntext\f4\'B7\tab}{\*\pn\pnlvlblt\pnf4\pnindent0{\pntxtb\'B7}}\fi-360\li720\sa200\sl276\slmult1 Uses Unity ECS and the Burst compiler to achieve \b top-tier performance\b0 .\par
+{\pntext\f4\'B7\tab}Uses \b sparse spatial partitioning \b0 for increased optimization.\par
+{\pntext\f4\'B7\tab}Capable of simulating \b tens of thousands of agents at 60+ fps easily \b0 on most modern processors.\par
+{\pntext\f4\'B7\tab}Capable of creating highly complex simulations, includes a Predator vs. Prey example scene.\par
+{\pntext\f4\'B7\tab}Includes \b physics-based obstacle avoidance\b0 . So your swarms won't end up flying through walls!\par
+{\pntext\f4\'B7\tab}Comes with classic boid behaviours such as seperation, alignment, cohesion; but also comes with more such as target, obstacle, avoidance, hover, gravity, and more! You can mix and match to easily create your own swarms, \b no coding required\b0 !\par
+{\pntext\f4\'B7\tab}Built to be as \b simple to extend \b0 as possible so you can easily \b create your own behaviours\b0 !\par
+{\pntext\f4\'B7\tab}Tons of customizable features to finely tune your swarms to exactly your needs.\par
+{\pntext\f4\'B7\tab}Includes extensive web-based documentation and video tutorial.\par
+{\pntext\f4\'B7\tab}\b Full source code included\b0 .\par
+{\pntext\f4\'B7\tab}Includes 3 examples scenes: Birds, Fish, PredatorPrey\par
+
+\pard\sa200\sl276\slmult1 Includes third-party texture assets. All third-party assets used are public domain. More information can be found in the Third-Party notices.txt file in the package.\par
+\par
+\par
+\line\ul\b\fs40 2. Links:\par
+\fs24\par
+2.1) Guides:\ulnone\b0  \b\par
+\tab\b0 ECS Swarms - Quick Start Guide: {{\field{\*\fldinst{HYPERLINK https://youtu.be/oCigbPfvL18 }}{\fldrslt{https://youtu.be/oCigbPfvL18\ul0\cf0}}}}\f1\fs24\par
+\par
+\ul\b 2.2) Trailers:\ulnone\b0  \b\par
+\tab\b0 ECS Swarms - Trailer: {{\field{\*\fldinst{HYPERLINK https://youtu.be/H_sWx-49djs }}{\fldrslt{https://youtu.be/H_sWx-49djs\ul0\cf0}}}}\f1\fs24\par
+\b\par
+\ul 2.3) Benchmarks:\ulnone\b0  \b\par
+\b0\tab ECS Swarms - Fish Benchmark: {{\field{\*\fldinst{HYPERLINK https://youtu.be/QhvLZH7z9Ck }}{\fldrslt{https://youtu.be/QhvLZH7z9Ck\ul0\cf0}}}}\f1\fs24  \line\tab ECS Swarms - Birds Benchmark: {{\field{\*\fldinst{HYPERLINK https://youtu.be/Wm_0ywNwXLo }}{\fldrslt{https://youtu.be/Wm_0ywNwXLo\ul0\cf0}}}}\f1\fs24  \line\tab ECS Swarms - PredatorPrey Benchmark: {{\field{\*\fldinst{HYPERLINK https://youtu.be/6KwXjlXdX30 }}{\fldrslt{https://youtu.be/6KwXjlXdX30\ul0\cf0}}}}\f1\fs24  \par
+\fs40\par
+\par
+\ul\b 3. Getting Started:\par
+\line\fs24 3.1) Requirements:\ulnone\b0  \ul\b\fs40\par
+\ulnone\b0\fs24\tab ECS Swarms makes use of ECS and DOTS, what this means is that in order to make use of ECS Swarms you must install some packages nessesary for ECS and DOTS. The two packages that are required are\b  Hybrid Renderer \b0 and \b Havok Physics for Unity \b0 (Unity Physics also works, but Havok Physics for Unity is a bit faster, while also having some additional licensing requirements). This means that you must also be using Unity version 2020.1.9f1 or later, as that is the last version that both of those packages are available for.\par
+\tab However, both of these packages are currently in the preview stages and have not had their full release yet. This means that you need to turn on \b Enable Preview Packages \b0 in the package manager. To do this, open your Unity project and navigate to \b Window \b0 > \b Package Manager \b0 > \b Settings (gear icon) \b0 > \b Advanced Project Settings\b0 . Then you can enable the \b Enable Preview Packages \b0 settings.\par
+\tab To install the Hybrid Renderer package, open your Unity project and navigate to \b Window \b0 > \b Package Manager \b0 > \b +\b0  > \b Add Package From git URL\b0 . Then enter \f2 com.unity.rendering.hybrid@0.50.0-preview.44 \f1 (the version may change, however after installing this there will be an option to update to the latest version. If you would like the documentation for the \b Hybrid Renderer\b0 , you can find it at {{\field{\*\fldinst{HYPERLINK https://docs.unity3d.com/Packages/com.unity.rendering.hybrid@latest/ }}{\fldrslt{https://docs.unity3d.com/Packages/com.unity.rendering.hybrid@latest/\ul0\cf0}}}}\f1\fs24 .\par
+\tab To install the Physics package, open your Unity project and navigate to \b Window \b0 > \b Package Manager\b0 , then set \b Packages \b0 to \b Unity Registry\b0 . Then search for "Physics" and install the \b Havok Physics for Unity \b0 package (note that you must have enabled the Enable Pre-release Packages setting in order to have this appear in the search). If you would like the documentation for this Physics package, you can find it at {{\field{\*\fldinst{HYPERLINK https://docs.unity3d.com/Packages/com.unity.physics@latest/ }}{\fldrslt{https://docs.unity3d.com/Packages/com.unity.physics@latest/\ul0\cf0}}}}\f1\fs24 .\par
+\tab You will also want to sure your project is made to render with either URP (Universal Render Pipeline) or HDRP (High Definition Render Pipeline), this is because Hybrid Renderer only supports those options, meaning that assets made for the Built-in render pipeline may not be compatible.\ul\b\par
+\ulnone\b0\par
+\ul\b 3.2) Using ECS Swarms:\ulnone\b0  \par
+\tab Using ECS Swarms once you have DOTS set-up is quite simple. All you need to do is place a \b Swarm Settings\b0  component on the GameObject you wish to use as a prefab for your swarms. After adding the swarms settings component, you can tweak the values and settings to whatever you would like. You must also click the \b ConvertToEntity \b0 toggle button, in order to mark this GameObject to be converted to an ECS entity. Then save that GameObject as a prefab.\par
+\tab After creating your swarm prefab, you must now create a swarm spawner. To do this add a \b Swarm Spawner\b0  component to any GameObject in your scene. You will want to fill in the data for the prefab to spawn, the area to spawn in, and the count to spawn. Make sure to also toggle \b ConvertToEntity \b0 on this GameObject.\par
+\tab That's really all you need to get started, it's that simple! In addition, you can also add the \b Swarm Node \b0 components to GameObjects, this will cause various effects on nearby swarms based on the node's tag attribute. However, those GameObjects must also have \b ConvertToEntity \b0 enabled.\par
+\par
+\par
+\ul\b\fs40 4. Built in Behaviours:\par
+\fs24\par
+4.1) Overview:\ulnone\b0  \par
+\tab ECS Swarms comes with many swarm/flocking behaviours. Some of these are classic boid behaviours such as \b seperation\b0 , \b alignment\b0 , and \b cohesion\b0 ; however, ECS Swarms also comes with others such as \b avoidance\b0 , \b hover\b0 , \b target\b0 , \b obstacle\b0 , \b gravity\b0 , and \b more\b0 ! This section will provide a brief description of how each behaviour works, and how to use all the various settings so you can customize your swarms to exactly your purpose.\par
+\par
+\ul\b 4.2) Vision:\ulnone\b0  \par
+\tab Many of the swarms behaviours are affected by it's vision settings. A swarms vision is it's ability to sense other swarms in it's nearby area. The built-in behaviours that are affected by vision are \b seperation\b0 , \b alignment\b0 , and \b cohesion\b0 . A swarm's vision has two propeties: distance (defines how far away this swarm can see other swarms from), and angle (defines the maximum angle at which this swarm can see other swarms, a value of 180 indicates full 360\'b0 vision.\par
+\tab The cell size of the sparse spatial partitioning is governed by the highest vision distance in the scene. For example if you have 10000 swarms with a vision distance of 10, but 1 swarm with a distance of 100. Then the cell size of the spatial partitioning will be 100, thus causing the simulation to run far slower. For maximum performance you want to keep the vision distances lower.\cf2\par
+\par
+\cf0\ul\b 4.3) Boid Behaviours:\ulnone\b0  \par
+\tab\ul\b 4.3.1) Seperation:\ulnone\b0  \par
+\tab Seperation is a behaviour that causes swarms to be repelled by nearby swarms if they get too close together. This helps stop swarms from stacking on top of each other. The settings for seperation are also used to calculate predator/prey forces.\par
+\tab\ul\b 4.3.2) Alignment:\ulnone\b0  \par
+\tab Alignment is a behaviour that causes swarms to steer to face in the same directions as other nearby swarms. This helps swarms move together in flocks better.\par
+\tab\ul\b 4.3.3) Cohesion:\ulnone\b0  \par
+\tab Cohesion is a behaviour that causes swarms to move towards the center of nearby swarms. This behaviour also helps swarms move together in flocks better.\cf2\par
+\par
+\cf0\ul\b 4.4) New Behaviours:\ulnone\b0  \par
+\tab\ul\b 4.4.1) Avoidance:\ulnone\b0  \par
+\tab Avoidance is a physics-based behaviour that performs obstacle avoidance for that swarm. It is calculated by doing many physics sphere casts until one is found that has a clear path. This behaviour allows swarms to avoid other colliders in your scene, you will also need to make sure those colliders are on GameObjects with \b ConvertToEntity \b0 enabled.\par
+\tab\ul\b 4.4.2) Hover:\ulnone\b0  \par
+\tab Hover is a physics-based behaviour that allows swarms to hover above some surface. It is calculated by doing a physics sphere cast in the downward direction, then applying a force upward depending on how close the swarm is to the surface. As with avoidance, you will also need to make sure the colliders that should be interacted with are on GameObjects with ConvertToEntity enabled.\par
+\tab\ul\b 4.4.3) Target:\ulnone\b0  \par
+\tab Target is a node-based behaviour that makes swarms attracted to nearby SwarmNode's with the Target tag.\cf2\par
+\cf0\tab\ul\b 4.4.4) Obstacle:\ulnone\b0  \par
+\tab Obstacle is a node-based behaviour that makes swarms repelled by nearby SwarmNode's with the Obstacle tag.\par
+\tab\ul\b 4.4.5) Gravity:\ulnone\b0  \par
+\tab Gravity is a behaviour that applies a constant force to the swarm.\cf2\par
+\cf0\tab\ul\b 4.4.6) Drag:\ulnone\b0  \par
+\tab Drag is a behaviour that applies drag or friction to the swarms movement. This can be used to dampen their movements or slow them down.\cf2\par
+\par
+\par
+\par
+\cf0\ul\b\fs40 5. How to Create Custom Behaviours:\par
+\par
+\fs24 5.1) What is ECS:\fs40\par
+\ulnone\b0\fs24\tab ECS stands for Entity Component System. It is a way of writing high performance code for DOTS (Unity's data-oriented technology stack). ECS code can be quite confusing at first, that is what ECS Swarms tries to abstract away as much ECS Code as possible. So that you can add your own swarm behaviours without having to be an expert in ECS. However, it is useful to at least have a basic understanding of ECS so that you can better understand ECS Swarms.\par
+\tab ECS works in terms of 3 main parts: Entities, Components, and Systems. Entities are essentially super light GameObjects, they are merely containers for Components. Components hold all the data for each individual, however they don't execute any behaviours, they only hold the data. Systems are what actually executes the behaviours, they collect entities with similar components, then calculate their behaviours in parallel using multi-threading. This multi-threading is what makes ECS incredibly performant.\par
+\tab What about the Burst compiler? Burst is a compiler that translates .NET (C#) bytecode into highly optimized native code that can also make used of SIMD instructions (Single Instruction, Multiple Data). This allows code compiled with Burst to run many times faster than non-Burst versions of the same code. \par
+\par
+\ul\b 5.2) Regular Behaviours:\fs40\par
+\ulnone\b0\fs24\tab If you want to create your own behaviour that doesn't utilize any physics-based features (no raycasts or anything similar), then you would likely want to implement it inside of the \b SwarmBehaviour \b0 struct, the \b SwarmBehaviour \b0 struct is what is responsible for calculating a swarms velocity.\par
+\par
+\ul\b 5.3) Physics Based Behaviours:\par
+\ulnone\b0\tab If you want to create your own behaviour that does use some physics-based features (no raycasts or anything similar), then you would likely want to implement it inside of the SwarmPhysicsSystem class, the SwarmPhysicsSystem is an ECS system that is responsible for calculating all the physics behaviours and adding them all to the swarms PhysicsResult. So if you want to add your own physics based behaviour, it should modify PhysicsResult and possibly ForcePhysics (a flag that causes regular behaviours to be ignored and to only use the physics-based ones, this can be used for emergency obstacle avoidance scenarios).\par
+\par
+\ul\b 5.4) Custom Settings:\par
+\ulnone\b0\tab Due to how ECS splits up data and behaviours, adding your own custom settings to a swarm is going to be slightly more complicated. You will need to do three things in order to add your own custom settings.\par
+    1. Add the properties you want into the \b SwarmSettings \b0 struct, this is component that is shared across all swarms with the same settings.\par
+    2. Add those same properties to the \b SwarmSettingsAuthoring \b0 class, this is the component that is shown in the inspector.\par
+    3. Edit the Convert function in the \b SwarmSettingsAuthoring \b0 class so that it will set the value in \b SwarmSettings \b0 to the corresponding value in \b SwarmSettingsAuthoring\b0 .\par
+\tab After you've done all those steps, you can then access your custom settings in code by accessing a \b SwarmSettings \b0 variable\ul\b\fs40\par
+\par
+\par
+6. Script Reference:\fs24\line\ulnone\b0\tab The script reference is not available in the offline documentation. To view the script reference go to the web-based documentation at {{\field{\*\fldinst{HYPERLINK https://tigpan.com/documentation/ecs-swarms/ }}{\fldrslt{https://tigpan.com/documentation/ecs-swarms/\ul0\cf0}}}}\f1\fs24 .\ul\b\fs40\par
+\par
+7. Contact Information:\ulnone\b0\par
+\fs24 If you have any questions or inquires please email \cf2\f3\fs19\lang1033 ecsswarmtoolkit@gmail.com\f1\fs24 .\par
+\cf0\fs22\lang9\par
+\fs24\par
+
+\pard\sl240\slmult1\fs22\par
+}
+ 

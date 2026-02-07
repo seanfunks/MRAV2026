@@ -1,0 +1,5 @@
+All third-party assets are used under the Public Domain license (CC0 1.0).
+
+Textures for the towers in the 'Birds' example scene:
+	License: Public Domain (CC0 1.0)
+	Artist: Frederic Hoffmann (https://publicdomaintextures.com/)
