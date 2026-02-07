@@ -1,0 +1,120 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1001 &2511484930435128005
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: 100094, guid: 224b5739c6ec161499c4334dc7306875, type: 3}
+      propertyPath: m_Name
+      value: SK_Eagle
+      objectReference: {fileID: 0}
+    - target: {fileID: 400094, guid: 224b5739c6ec161499c4334dc7306875, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 7.663265
+      objectReference: {fileID: 0}
+    - target: {fileID: 400094, guid: 224b5739c6ec161499c4334dc7306875, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 400094, guid: 224b5739c6ec161499c4334dc7306875, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: -2.226653
+      objectReference: {fileID: 0}
+    - target: {fileID: 400094, guid: 224b5739c6ec161499c4334dc7306875, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 400094, guid: 224b5739c6ec161499c4334dc7306875, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 400094, guid: 224b5739c6ec161499c4334dc7306875, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 400094, guid: 224b5739c6ec161499c4334dc7306875, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 400094, guid: 224b5739c6ec161499c4334dc7306875, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 400094, guid: 224b5739c6ec161499c4334dc7306875, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 400094, guid: 224b5739c6ec161499c4334dc7306875, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 9500000, guid: 224b5739c6ec161499c4334dc7306875, type: 3}
+      propertyPath: m_Controller
+      value: 
+      objectReference: {fileID: 9100000, guid: d27910c6f5d24224b92963c39115f709, type: 2}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 100094, guid: 224b5739c6ec161499c4334dc7306875, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 6733301991737314773}
+    - targetCorrespondingSourceObject: {fileID: 100094, guid: 224b5739c6ec161499c4334dc7306875, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 977700814054745966}
+  m_SourcePrefab: {fileID: 100100000, guid: 224b5739c6ec161499c4334dc7306875, type: 3}
+--- !u!1 &2511484930435095611 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 100094, guid: 224b5739c6ec161499c4334dc7306875, type: 3}
+  m_PrefabInstance: {fileID: 2511484930435128005}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &6733301991737314773
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2511484930435095611}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5ddb28485bf4c8d428e66cee20e64f92, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  gravity: 9.81
+  liftForce: 12
+  flapFrequency: 1.5
+  thrustForce: 6
+  dragCoefficient: 0.3
+  maxSpeed: 15
+  minSpeed: 2
+  steeringForce: 4
+  bankAngleMax: 45
+  pitchInfluence: 0.3
+  rotationSmoothing: 5
+  velocity: {x: 0, y: 0, z: 0}
+  currentSpeed: 0
+  verticalVelocity: 0
+  bankAngle: 0
+  flapPhase: 0
+  isFlapping: 1
+--- !u!114 &977700814054745966
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2511484930435095611}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f51a3b0a49a6b244ebf745baa50e812c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  glideSpeedThreshold: 8
+  diveVerticalThreshold: -5
+  recoverVerticalThreshold: -2
+  flapSpeedMin: 0.5
+  flapSpeedMax: 2

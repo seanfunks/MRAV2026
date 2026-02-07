@@ -58,13 +58,7 @@ public class BirdFlightAnimator : MonoBehaviour
         float speed = physics.CurrentSpeed;
         bool flapping = physics.IsFlapping;
 
-        // Priority: dive first (strong downward motion)
-        if (vy < diveVerticalThreshold)
-            return FlightAnimState.Falling;
-
-        // Recovering from a fall
-        if (currentState == FlightAnimState.Falling && vy > recoverVerticalThreshold)
-            return FlightAnimState.Glide; // recover through glide first
+        // Dive/Falling disabled — birds only Fly or Glide for now
 
         // Gliding: not flapping and fast enough
         if (!flapping && speed > glideSpeedThreshold)

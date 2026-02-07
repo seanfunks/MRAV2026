@@ -9,13 +9,14 @@ public class BirdFlightPhysics : MonoBehaviour
 {
     [Header("Gravity & Lift")]
     public float gravity = 9.81f;
-    public float liftForce = 12.0f;
+    public float liftForce = 3.0f;
     public float flapFrequency = 1.5f;
 
     [Header("Propulsion")]
     public float thrustForce = 6.0f;
-    public float dragCoefficient = 0.3f;
-    public float maxSpeed = 15.0f;
+    public float horizontalDrag = 0.1f;
+    public float verticalDrag = 0.02f;
+    public float maxHorizontalSpeed = 15.0f;
     public float minSpeed = 2.0f;
 
     [Header("Steering")]
@@ -42,7 +43,7 @@ public class BirdFlightPhysics : MonoBehaviour
     public float FlapPhase => flapPhase;
     public bool IsFlapping => isFlapping;
     public float MinSpeed => minSpeed;
-    public float MaxSpeed => maxSpeed;
+    public float MaxSpeed => maxHorizontalSpeed;
 
     // Steering target
     private Vector3 steeringTarget;
@@ -55,7 +56,7 @@ public class BirdFlightPhysics : MonoBehaviour
     void Start()
     {
         flapRandomOffset = Random.Range(0f, 10f);
-        velocity = transform.forward * (minSpeed + maxSpeed) * 0.5f;
+        velocity = transform.forward * (minSpeed + maxHorizontalSpeed) * 0.5f;
         isFlapping = true;
     }
 
@@ -66,34 +67,50 @@ public class BirdFlightPhysics : MonoBehaviour
         // 1. Gravity
         velocity.y -= gravity * dt;
 
-        // 2. Lift from flap cycle (periodic upward force on downstroke)
+        // 2. Lift: base lift counters gravity, flap cycle adds bobbing
         flapTimer += dt;
         float flapAngle = (flapTimer + flapRandomOffset) * flapFrequency * 2f * Mathf.PI;
         flapPhase = (Mathf.Sin(flapAngle) + 1f) * 0.5f; // 0..1 for animation
 
         if (isFlapping)
         {
-            float lift = liftForce * Mathf.Cos(flapAngle);
-            velocity.y += Mathf.Max(0f, lift) * dt;
+            // Base lift: fully counters gravity + slight surplus to climb
+            velocity.y += (gravity + 1.0f) * dt;
+            // Periodic flap bobbing: oscillates ±liftForce for natural motion
+            velocity.y += Mathf.Sin(flapAngle) * liftForce * dt;
         }
 
         // 3. Forward thrust
         velocity += transform.forward * thrustForce * dt;
 
-        // 4. Aerodynamic drag (quadratic)
-        float speedSq = velocity.sqrMagnitude;
-        if (speedSq > 0.01f)
+        // 4. Drag — applied separately so vertical lift isn't crushed by horizontal speed
+        // Horizontal drag (quadratic, based on horizontal speed only)
+        Vector3 horizontalVel = new Vector3(velocity.x, 0f, velocity.z);
+        float hSpeedSq = horizontalVel.sqrMagnitude;
+        if (hSpeedSq > 0.01f)
         {
-            Vector3 dragForce = -velocity.normalized * dragCoefficient * speedSq;
-            velocity += dragForce * dt;
+            Vector3 hDrag = -horizontalVel.normalized * horizontalDrag * hSpeedSq;
+            velocity.x += hDrag.x * dt;
+            velocity.z += hDrag.z * dt;
         }
 
-        // 5. Speed clamping
-        currentSpeed = velocity.magnitude;
-        if (currentSpeed > maxSpeed)
-            velocity = velocity.normalized * maxSpeed;
-        else if (currentSpeed > 0.01f && currentSpeed < minSpeed)
-            velocity = velocity.normalized * minSpeed;
+        // Vertical drag (light, so lift can actually work)
+        velocity.y -= velocity.y * verticalDrag;
+
+        // 5. Horizontal speed clamping (don't touch vertical component)
+        float hSpeed = new Vector3(velocity.x, 0f, velocity.z).magnitude;
+        if (hSpeed > maxHorizontalSpeed)
+        {
+            float scale = maxHorizontalSpeed / hSpeed;
+            velocity.x *= scale;
+            velocity.z *= scale;
+        }
+        else if (hSpeed > 0.01f && hSpeed < minSpeed)
+        {
+            float scale = minSpeed / hSpeed;
+            velocity.x *= scale;
+            velocity.z *= scale;
+        }
         currentSpeed = velocity.magnitude;
 
         // 6. Steering toward target
