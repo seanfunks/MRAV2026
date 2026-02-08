@@ -12,14 +12,15 @@
 
 ## Architecture Overview
 
-### Input Pipeline
+### Input Pipeline (Phase 2 — Current)
 ```
 External Controller (4x4 pad) / Ableton Live
     → OSC over UDP (port 6969)
     → OSC.cs (UnityOSC library)
     → BirdInputMapper.cs (action IDs 0-15)
-    → BirdFlightController.cs (flock commands)
-    → BirdFlightPhysics.cs (per-bird forces)
+    → BirdOrchestrator.cs (routes to correct BirdGroup)
+    → BirdGroup (button priority queue → active behavior)
+    → Per-group behavior (direct positioning or physics steering)
 
 Keyboard (for dev/testing):
     1234 / QWER / ASDF / ZXCV → same 4x4 grid, same action IDs
@@ -29,26 +30,39 @@ Keyboard (for dev/testing):
 
 | System | Scripts | Purpose |
 |--------|---------|---------|
-| **Bird Flight (NEW)** | `BirdFlightPhysics.cs`, `BirdFlightAnimator.cs`, `BirdFlightController.cs`, `BirdInputMapper.cs` | Physics-based independent bird flight with gravity, lift, drag, steering, banking |
-| **Bird Flight (OLD)** | `BirdController.cs`, `birdPath.cs`, `BirdSpinning.cs` | Legacy path-based bird movement (kept for rollback, toggle with F12) |
+| **Bird Orchestrator (NEW)** | `BirdOrchestrator.cs`, `BirdGroup.cs` | Group-based bird management with per-group input routing and behaviors |
+| **Bird Flight Physics** | `BirdFlightPhysics.cs`, `BirdFlightAnimator.cs` | Per-bird physics: gravity, lift, drag, steering, banking, auto flap/glide cycle |
+| **Bird Flock Manager** | `BirdFlightController.cs` | Legacy flock spawner (still works, can be used alongside orchestrator) |
+| **Input Mapper** | `BirdInputMapper.cs` | 4x4 keyboard + OSC → 16 action IDs |
+| **Camera** | `CameraMouseLook.cs` | Right-click + mouse to look around (dev testing) |
+| **Bird Flight (OLD)** | `BirdController.cs`, `birdPath.cs`, `BirdSpinning.cs` | Legacy path-based movement (kept for rollback, toggle with F12) |
 | **Particle VFX** | `MRAVctrl.cs`, `OneShotFly.cs` | OSC-triggered particle effects and background VFX |
 | **Spline Path** | `SplineFly.cs` (SimpleFollowSpline) | Catmull-Rom spline following for player/camera path |
 | **OSC** | `Assets/UnityOSC/OSC.cs` | Network communication library — `SetAddressHandler()` supports multiple handlers per address |
 
 ### Important File Paths
 ```
-Assets/Scripts/BirdMovement/          — All bird scripts (old + new)
-Assets/Scripts/MRAVctrl.cs            — Main OSC→VFX controller
-Assets/Scripts/fromAlbeton.cs         — Ableton Live OSC receiver
-Assets/UnityOSC/OSC.cs               — OSC library
-Assets/SplineFly.cs                   — SimpleFollowSpline (Catmull-Rom)
-Assets/Scenes/BirdFlightTest.unity    — Dev scene for bird flight work
-Assets/Scenes/bobSandbox-*.unity      — Legacy sandbox scenes (old system)
-Assets/ANIMALS FULL PACK/Birds Pack/Golden Eagle/  — Eagle model + animations
+Assets/Scripts/BirdMovement/              — All bird scripts (old + new + orchestrator)
+Assets/Scripts/BirdMovement/BirdOrchestrator.cs  — Scene-level group manager
+Assets/Scripts/BirdMovement/BirdGroup.cs         — Per-group logic + button priority
+Assets/Scripts/BirdMovement/BirdFlightPhysics.cs — Per-bird physics
+Assets/Scripts/BirdMovement/BirdFlightAnimator.cs — Per-bird animation driver
+Assets/Scripts/BirdMovement/BirdFlightController.cs — Legacy flock spawner
+Assets/Scripts/BirdMovement/BirdInputMapper.cs   — 4x4 input (keyboard + OSC)
+Assets/Scripts/BirdMovement/CameraMouseLook.cs   — Dev camera control
+Assets/Scripts/MRAVctrl.cs                — Main OSC→VFX controller
+Assets/Scripts/fromAlbeton.cs             — Ableton Live OSC receiver
+Assets/UnityOSC/OSC.cs                   — OSC library
+Assets/SplineFly.cs                       — SimpleFollowSpline (Catmull-Rom)
+Assets/Scenes/260206 - Phase 2 - Buttons.unity  — Current dev scene
+Assets/Scenes/260206 - BirdsActingLikeBirds.unity — Phase 1 test scene
+Assets/Scenes/BirdFlightTest.unity        — Original blank test scene
+Assets/ANIMALS FULL PACK/Birds Pack/Golden Eagle/ — Eagle model + animations
 ```
 
 ### Eagle Assets
 - **Model:** `SK_Eagle.FBX`
+- **Prefab:** `Assets/SK_Eagle.prefab`
 - **Animations:** `Eagle@Fly.FBX`, `Eagle@Glide.FBX`, `Eagle@Falling.FBX`
 - **Animator Controller:** `Eagle_Controller RG1.controller`
   - Parameters: `GlideABit`, `FlyABit`, `Dive` (triggers), `FlappySpeedAdjust` (float)
@@ -58,178 +72,223 @@ Assets/ANIMALS FULL PACK/Birds Pack/Golden Eagle/  — Eagle model + animations
 ### Design Decisions
 - **No ECS Swarms for birds** — the ECS Swarms asset exists in the project but is deliberately not used for birds. All bird code is MonoBehaviour/Transform based.
 - **OSC handlers are additive** — registering bird handlers on the same OSC addresses as MRAVctrl won't break particle effects. Both fire simultaneously.
-- **Prefab spawning** — birds are spawned at runtime from a prefab via `BirdFlightController`. No manual scene placement needed.
-- **System toggle** — F12 switches between old (BirdController) and new (BirdFlightPhysics) systems at runtime. Components are enabled/disabled, not destroyed.
+- **Prefab spawning** — birds are spawned at runtime from a prefab via orchestrator or BirdFlightController.
+- **System toggle** — F12 switches between old (BirdController) and new (BirdFlightPhysics) systems at runtime.
 
 ---
 
-## Bird Flight Physics — How It Works (Current Working Code)
+## Bird Group Orchestrator — Phase 2 System
+
+### 4x4 Input Grid → Group Mapping
+
+The 16 buttons are organized into 4 groups (2x2 blocks):
+
+```
+ Group 1: FlapperBuddies  |  Group 2: CirclingFlappers
+      1   2                |       3   4
+      Q   W                |       E   R
+ --------------------------+---------------------------
+ Group 3: FlockPatterns    |  Group 4: VisualEffect
+      A   S                |       D   F
+      Z   X                |       C   V
+```
+
+**Action ID mapping:**
+```
+Group 1 (FlapperBuddies):    actionIDs 0,1,4,5   (keys 1,2,Q,W)  → localButtons 0,1,2,3
+Group 2 (CirclingFlappers):   actionIDs 2,3,6,7   (keys 3,4,E,R)  → localButtons 0,1,2,3
+Group 3 (FlockPatterns):      actionIDs 8,9,12,13 (keys A,S,Z,X)  → localButtons 0,1,2,3
+Group 4 (VisualEffect):       actionIDs 10,11,14,15 (keys D,F,C,V) → localButtons 0,1,2,3
+```
+
+**OSC addresses:** `/bird/R1C1` through `/bird/R4C4`, plus legacy `/T1`-`/T4`, `/TM1`-`/TM4`, `/BM1`-`/BM4`, `/B1`-`/B4`
+
+### Button Priority System (per group)
+
+Each group has 4 buttons with this behavior:
+- **Momentary**: behavior active only while button is held
+- **First-pressed wins**: if button 0 is held and button 1 pressed, button 0's behavior stays active
+- **Handoff on release**: if button 0 released while button 1 still held, transition to button 1's behavior
+- **All released = default**: revert to group's default behavior
+
+Implementation: `BirdGroup.cs` maintains an ordered list of held buttons (press order). First item = active behavior. Release removes from list; if it was first, next takes over.
+
+### Groups Overview
+
+| Group | Name | Birds | Default Behavior | Button Behaviors |
+|-------|------|-------|------------------|------------------|
+| 1 | FlapperBuddies | 2 (2x scale) | Hover in front of camera, facing away, gentle bob | TBD — placeholder stubs ready |
+| 2 | CirclingFlappers | TBD | TBD | TBD |
+| 3 | FlockPatterns | TBD | TBD | TBD |
+| 4 | VisualEffect | N/A (no birds) | Deferred to later phase | Deferred |
+
+### FlapperBuddies — Current Implementation
+
+**Default behavior (no buttons pressed):**
+- 2 eagles spawned at 2x scale
+- **Directly positioned** relative to camera (physics disabled — `BirdFlightPhysics` and `BirdFlightAnimator` are disabled)
+- Positioned in front of camera, spread left/right, always facing away from user
+- Smooth lerp follow (8f * deltaTime) so they don't feel rigidly attached
+- Each bird bobs out of sync (sine wave, 0.3 amplitude, 1.5 Hz)
+
+**Inspector tuning (BirdOrchestrator):**
+```
+flapperBuddiesCount = 2
+flapperBuddiesScale = 2.0    — double size
+flapperDistance = 10.0        — units in front of camera
+flapperSpread = 3.0           — left/right offset
+flapperHeight = 1.5           — above camera height
+```
+
+**Why physics is disabled for FlapperBuddies:** The flight physics model (gravity, thrust, drag, steering) is designed for free-flying birds. FlapperBuddies need to be "locked" to the camera view — they move with your head. Direct positioning via `Vector3.Lerp` each frame is simpler and more reliable for this. When button behaviors need physics (e.g., "fly away and come back"), physics can be re-enabled per bird.
+
+### Scene Setup (BirdOrchestrator)
+1. Create empty GameObject → name `BirdOrchestrator`
+2. Add Component: `BirdOrchestrator`
+3. Add Component: `BirdInputMapper`
+4. Inspector: drag self → Input Mapper, Main Camera → Camera Transform, SK_Eagle prefab → Bird Prefab
+
+---
+
+## Bird Flight Physics — How It Works
 
 ### Core Principle: Separation of Concerns
-The flight system is split into layers so that pathing/steering can change WITHOUT breaking physics:
+The flight system is split into layers:
 
 ```
-BirdFlightController (WHAT to do)     — "go to this point" / "orbit here"
-        ↓ calls SetSteeringTarget()
-BirdFlightPhysics (HOW to fly there)  — gravity, lift, drag, steering forces
+BirdOrchestrator / BirdFlightController (WHAT to do)
+        ↓ calls SetSteeringTarget() or directly positions
+BirdFlightPhysics (HOW to fly there)
         ↓ reads physics state
-BirdFlightAnimator (HOW it looks)     — Fly/Glide animation from velocity
+BirdFlightAnimator (HOW it looks)
 ```
 
-**Key insight for pathing:** The physics layer only receives a target position via `SetSteeringTarget()`. It never teleports. It always flies there using real forces. So ANY pathing system (waypoints, splines, formations) just needs to call `SetSteeringTarget()` with the next destination — gravity, lift, and drag continue working automatically.
+**Key insight for pathing:** The physics layer only receives a target position via `SetSteeringTarget()`. It never teleports. It always flies there using real forces. So ANY pathing system just needs to call `SetSteeringTarget()` with the next destination.
+
+**Exception:** FlapperBuddies bypass physics entirely — they use direct positioning because they need to be camera-locked.
 
 ### FixedUpdate Execution Order (BirdFlightPhysics.cs)
 
 ```
-Step 1: GRAVITY         velocity.y -= 9.81 * dt
-                        (constant downward pull every frame)
+Step 0: FLAP/GLIDE CYCLE  Auto-toggle isFlapping on timer
+                           Flap: 3-7s random, Glide: 5-10s random
+                           Each bird starts at random point in cycle
 
-Step 2: LIFT            if (isFlapping):
-                          velocity.y += (gravity + 1.0) * dt     ← base lift: exactly counters gravity + slight climb
-                          velocity.y += sin(flapAngle) * 3.0 * dt  ← periodic bobbing for natural motion
-                        if (!isFlapping):
-                          no lift → bird sinks gradually (gliding)
+Step 1: GRAVITY            velocity.y -= 9.81 * dt
 
-Step 3: THRUST          velocity += transform.forward * 6.0 * dt
-                        (always pushes bird forward in its facing direction)
+Step 2: LIFT (always on)   velocity.y += (gravity + 1.0) * dt     ← base: counters gravity + slight climb
+                           velocity.y += sin(flapAngle) * 3.0 * dt  ← periodic bobbing
+                           Lift is ALWAYS active (simulates wind/thermals during glide)
+                           isFlapping only affects animation, not physics
 
-Step 4: DRAG            horizontal: quadratic (0.1 * hSpeed²) — only affects X/Z
-                        vertical: light linear (0.02 * vy) — barely touches Y
-                        CRITICAL: drag is SPLIT so horizontal speed doesn't kill lift
+Step 3: THRUST             velocity += transform.forward * 6.0 * dt
 
-Step 5: SPEED CLAMP     horizontal only (2..15) — does NOT touch velocity.y
-                        CRITICAL: clamping is horizontal-only so lift isn't squashed
+Step 4: DRAG               horizontal: quadratic (0.1 * hSpeed²) — X/Z only
+                           vertical: light linear (0.02 * vy) — Y only
+                           CRITICAL: split so horizontal speed doesn't kill lift
 
-Step 6: STEERING        if (hasTarget):
-                          desired = toTarget.normalized * currentSpeed
-                          steer = (desired - velocity).normalized * 4.0
-                          velocity += steer * dt
-                        (Craig Reynolds steering — produces smooth arcs, not sharp turns)
+Step 5: SPEED CLAMP        horizontal only (2..15) — does NOT touch velocity.y
 
-Step 7: INTEGRATE       position += velocity * dt
+Step 6: STEERING           Craig Reynolds: steer = (desired - velocity).normalized * 4.0
+                           Produces smooth arcs, not sharp turns
 
-Step 8: ORIENT          rotation = Slerp toward LookRotation(velocity)
-                        + bank/roll from lateral velocity component
+Step 7: INTEGRATE          position += velocity * dt
 
-Step 9: RECORD          verticalVelocity = velocity.y  (for animator)
+Step 8: ORIENT             Slerp toward LookRotation(velocity) + bank roll
+
+Step 9: RECORD             verticalVelocity = velocity.y (for animator)
 ```
 
-### Why Drag and Speed Clamping Are Split Horizontal/Vertical
-**This was the hardest bug to find.** Originally drag used total `velocity.sqrMagnitude` and speed clamping normalized the entire vector. This meant:
-- A bird going fast horizontally (speed 15) generated drag of `0.3 * 225 = 67.5` — which crushed the Y component
-- Speed clamping to maxSpeed would proportionally squash velocity.y when the bird was at max horizontal speed
-
-The fix: horizontal drag only sees X/Z speed, vertical drag is tiny (0.02), and speed clamping only scales X/Z. This lets lift work independently of horizontal flight speed.
+### Auto Flap/Glide Cycle
+Birds automatically alternate between flapping and gliding:
+- **Flap duration:** 3-7 seconds (random per cycle)
+- **Glide duration:** 5-10 seconds (random per cycle)
+- Each bird starts at a random point in its cycle (staggered)
+- **Lift stays constant** during glide — `isFlapping` is purely visual (drives Fly↔Glide animation)
+- No altitude loss during glide (simulates wind/thermals keeping bird aloft)
 
 ### Current Tuning Values
 ```
-gravity = 9.81          — standard Earth gravity
-liftForce = 3.0         — bobbing amplitude (NOT the main lift — that's gravity+1.0)
-flapFrequency = 1.5     — flaps per second (base, desynchronized per bird)
-thrustForce = 6.0       — forward propulsion
-horizontalDrag = 0.1    — quadratic drag on X/Z only
-verticalDrag = 0.02     — very light linear drag on Y
-maxHorizontalSpeed = 15 — horizontal speed cap
-minSpeed = 2.0          — minimum horizontal speed (birds never stop)
-steeringForce = 4.0     — how hard birds turn toward targets
-bankAngleMax = 45       — max roll degrees on turns
-rotationSmoothing = 5.0 — how fast bird reorients
+gravity = 9.81            — standard Earth gravity
+liftForce = 3.0           — bobbing amplitude (base lift = gravity+1.0)
+flapFrequency = 1.5       — flaps per second
+flapDurationMin/Max = 3/7 — seconds of flapping before glide
+glideDurationMin/Max = 5/10 — seconds of gliding before flap
+thrustForce = 6.0         — forward propulsion
+horizontalDrag = 0.1      — quadratic drag on X/Z only
+verticalDrag = 0.02       — very light linear drag on Y
+maxHorizontalSpeed = 15   — horizontal speed cap
+minSpeed = 2.0            — minimum horizontal speed
+steeringForce = 4.0       — turning toward targets
+bankAngleMax = 45         — max roll degrees on turns
+rotationSmoothing = 5.0   — how fast bird reorients
 ```
 
 ### Animation States (BirdFlightAnimator.cs)
-Currently only two states are active:
-- **Fly** — default, always active when `isFlapping == true`
-- **Glide** — activates when `isFlapping == false` and speed > 8.0
-
-Diving/Falling is disabled (code exists but won't auto-trigger). WingTuck available via `ForceWingTuck()` API only.
-
-`FlappySpeedAdjust` float is continuously mapped from bird speed → animation playback speed (0.5x at minSpeed to 2.0x at maxSpeed).
-
-### Flock Manager (BirdFlightController.cs)
-- Spawns N birds from a prefab in a circle at height 8
-- Default behavior: each bird steers toward a unique point spread around a flock center offset from the player
-- Flock center slowly orbits (orbitSpeed = 0.3)
-- Each bird has a unique spread angle so they don't clump
+- **Fly** — active when `isFlapping == true`
+- **Glide** — active when `isFlapping == false` and speed > 8.0
+- Diving/Falling disabled (code exists but won't auto-trigger)
+- `FlappySpeedAdjust` mapped from speed → animation playback speed (0.5x-2.0x)
 
 ### How to Add Pathing Without Breaking Flight Physics
 
-**The steering system is the bridge.** Any pathing approach works the same way:
-
+**Use `SetSteeringTarget()` — the bird flies there naturally:**
 ```csharp
-// Waypoint system example — just feed sequential targets
 birdPhysics[i].SetSteeringTarget(waypoints[currentIndex]);
-if (Vector3.Distance(bird.position, waypoints[currentIndex]) < arrivalRadius)
-    currentIndex++;  // advance to next waypoint
-
-// Spline system example — sample point ahead on spline
-float lookAhead = 0.05f; // 5% ahead on the spline
-Vector3 target = spline.EvaluatePosition(progress + lookAhead);
-birdPhysics[i].SetSteeringTarget(target);
 ```
 
 **What NOT to do:**
-- Don't set `transform.position` directly — bypasses all physics
+- Don't set `transform.position` directly — bypasses physics
 - Don't set `velocity` directly — breaks gravity/lift balance
-- Don't disable `BirdFlightPhysics` and move the bird manually — loses all flight behavior
+- Don't disable `BirdFlightPhysics` unless the group intentionally bypasses physics (like FlapperBuddies)
 
 **What's safe:**
-- `SetSteeringTarget(pos)` — the bird flies there naturally, gravity and lift keep working
-- `SetFlapping(bool)` — toggle flap/glide (gliding = gradual altitude loss)
-- `ApplyImpulse(vec)` — one-shot force push (for reactions to events)
+- `SetSteeringTarget(pos)` — bird flies there naturally
+- `SetFlapping(bool)` — toggle flap/glide animation (physics stays same)
+- `ApplyImpulse(vec)` — one-shot force push
 - `ClearSteeringTarget()` — bird continues on current heading
-
-**"Gliding around corners"** happens naturally — steering force is limited to 4.0, so when a bird approaches a waypoint at speed 15 it can't turn instantly. It arcs through the turn, banking as it goes. Tighter turns = increase steeringForce. Wider arcs = decrease it.
-
----
-
-## 4x4 Input Grid
-```
-Row 0:  1  2  3  4    → Action IDs 0-3
-Row 1:  Q  W  E  R    → Action IDs 4-7
-Row 2:  A  S  D  F    → Action IDs 8-11
-Row 3:  Z  X  C  V    → Action IDs 12-15
-
-OSC addresses: /bird/R1C1 through /bird/R4C4
-Legacy OSC:    /T1-T4, /TM1-TM4, /BM1-BM4, /B1-B4
-```
-Action-to-behavior bindings are NOT yet mapped — deferred until flight tuning is complete.
 
 ---
 
 ## Project Phases
 
-### Phase 1: Bird Flight Physics — IN PROGRESS
-- [x] Core physics script (gravity, lift, drag, thrust, steering, banking)
-- [x] Animation driver (Fly/Glide from physics state)
+### Phase 1: Bird Flight Physics — COMPLETE
+- [x] Core physics (gravity, lift, drag, thrust, steering, banking)
+- [x] Split horizontal/vertical drag (critical bug fix)
+- [x] New lift model (base lift + bobbing, always active)
+- [x] Auto flap/glide cycle (birds naturally alternate)
+- [x] Lift constant during glide (simulates wind/thermals)
+- [x] Animation driver (Fly/Glide only, diving disabled)
 - [x] Flock manager with prefab spawning
 - [x] 4x4 input mapper infrastructure (keyboard + OSC)
 - [x] Old/new system toggle (F12)
-- [x] Dev scene (BirdFlightTest)
+- [x] Camera mouse look (right-click to look around)
+- [x] Eagle prefab + dev scenes
 - [x] Push to new repo (seanfunks/MRAV2026)
-- [x] Create eagle prefab with all components wired up
-- [x] First flight test — fixed drag/lift interaction bug (split horizontal/vertical)
-- [x] Disabled diving/falling (Fly + Glide only for now)
-- [ ] Tune lift/gravity balance until vertical velocity oscillates near zero
-- [ ] Verify flap animation syncs with physics bobbing
-- [ ] Tune steering smoothness and banking feel
-- [ ] Tune until flight looks/feels natural
+- [x] Birds acting like birds — flight looks/feels natural
 
-### Phase 2: Input → Bird Behavior Mapping
-- [ ] Define what each of the 16 buttons does to the birds
-- [ ] Wire action IDs to specific flock commands
+### Phase 2: Group Orchestrator + Behaviors — IN PROGRESS
+- [x] BirdGroup class with button priority queue (first-pressed wins, handoff)
+- [x] BirdOrchestrator with group spawning and input routing
+- [x] 4x4 grid → 4 groups (2x2 blocks) mapping
+- [x] FlapperBuddies default behavior (2 birds, 2x scale, camera-locked hover)
+- [ ] FlapperBuddies button behaviors (4 buttons, added one at a time)
+- [ ] CirclingFlappers group (spawn count, default behavior, button behaviors)
+- [ ] FlockPatterns group (spawn count, default behavior, button behaviors)
 - [ ] Test with keyboard
 - [ ] Test with external OSC controller
 
 ### Phase 3: Waypoint Navigation
-- [ ] Design waypoint data structure (array of Vector3 per bird or shared path)
-- [ ] Implement waypoint follower that calls `SetSteeringTarget()` sequentially
-- [ ] Arrival detection (how close before advancing to next waypoint)
+- [ ] Waypoint data structure
+- [ ] Sequential target follower using `SetSteeringTarget()`
+- [ ] Arrival detection
 - [ ] Smooth "gliding around corners" — steering force produces natural arcs automatically
-- [ ] Optional: integration with Unity Spline system for visual path editing
-- [ ] Optional: per-waypoint speed/flap settings (e.g., "glide through this section")
+- [ ] Optional: Unity Spline integration for visual path editing
+- [ ] Optional: per-waypoint speed/flap settings
 
 ### Phase 4: Integration & Performance
 - [ ] Integrate bird system with existing MRAVctrl particle VFX
+- [ ] VisualEffect group (Group 4) — define behaviors
 - [ ] Build to Oculus Quest — verify performance
 - [ ] Mixed reality passthrough testing
 - [ ] Live performance workflow testing with Ableton + controller
