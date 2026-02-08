@@ -4,8 +4,8 @@
 - **Repo:** https://github.com/seanfunks/MRAV2026
 - **Local:** `c:\repos\suibiweng\MRAV_Eagle`
 - **Branch:** `main` (single-branch, fresh start Feb 2026)
-- **Unity Version:** Check `ProjectSettings/ProjectVersion.txt`
-- **Platform Target:** Oculus Quest (Android), Meta XR SDK 66.0
+- **Unity Version:** 6000.3.7f1 (Unity 6 LTS) — upgraded from 2022.3.35f1 on Feb 2026
+- **Platform Target:** Oculus Quest (Android), Meta XR SDK 66.0 (upgrade to v74+ pending for OpenXR migration)
 
 ## What This Project Is
 **MRDJ (Mixed Reality DJ)** — a VR audio-visual performance app built in Unity. A performer triggers visual effects and bird behaviors in real-time from external music software (Ableton Live) or hardware controllers via OSC (Open Sound Control). The audience/performer experiences it in mixed reality on the Quest headset.

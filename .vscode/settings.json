@@ -51,5 +51,6 @@
         "temp/": true,
         "Temp/": true
     },
-    "dotnet.defaultSolution": "MRAV_Eagle.sln"
+    "dotnet.defaultSolution": "MRAV_Eagle.sln",
+    "dotnet.preferCSharpExtension": true
 }
